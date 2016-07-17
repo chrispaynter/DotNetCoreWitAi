@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net;
 using Microsoft.Extensions.Options;
 using Paynter.WitAi.Configuration;
+using Paynter.WitAi.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Paynter.WitAi.Services
@@ -38,12 +39,12 @@ namespace Paynter.WitAi.Services
             }
         }
 
-        public async Task<WitResponse> Message(string message)
+        public async Task<WitMessageResponse> Message(string message)
         {
             var queryString = $"q={WebUtility.UrlEncode(message)}";
             var response = await HttpClient.GetAsync($"message?{queryString}");
             var content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<WitResponse>(content);
+            return JsonConvert.DeserializeObject<WitMessageResponse>(content);
         }
     }
 }

@@ -1,9 +1,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Paynter.WitAi
+namespace Paynter.WitAi.Models
 {
-    public class WitResponse
+    public class WitConverseResponse
     {
         [JsonProperty("msg_id")]
         public string MessageId { get; set; }

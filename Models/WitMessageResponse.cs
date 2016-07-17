@@ -3,15 +3,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Paynter.WitAi.Models
 {
-    public class WitOutcome
+    public class WitMessageResponse
     {
         [JsonProperty("msg_id")]
-        public int MessageId { get; set; }
+        public string MessageId { get; set; }
         
-        public string Intent { get; set; }
+        [JsonProperty("_text")]
+        public string Text { get; set; }
 
         public JObject Entities { get; set; }
-
-        public double Confidence { get; set; }
     }
 }
