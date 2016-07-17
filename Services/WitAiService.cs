@@ -45,13 +45,13 @@ namespace Paynter.WitAi.Services
         public async Task<WitMessageResponse> Message(string message)
         {
             var queryString = $"q={WebUtility.UrlEncode(message)}";
-            var response = await HttpClient.GetAsync($"message?{queryString}");
+            var response = await HttpClient.GetAsync($"/message?{queryString}");
 
             if(response.StatusCode != HttpStatusCode.OK)
             {
                 var contents = await response.Content.ReadAsStringAsync();
                 _logger.LogError("Error sending message to Wit.AI Message API", contents, queryString, message);
-                throw new WitAiServiceException("Error sending message to Wit.AI Message API", response);
+                throw new WitAiServiceException("Error sending message to Wit.AI Message API", response, contents);
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -66,11 +66,11 @@ namespace Paynter.WitAi.Services
                 throw new WitAiServiceException("SessionId is mandatory");
             }
 
-            var queryString = $"s={request.SessionId}";
+            var queryString = $"session_id={WebUtility.UrlEncode(request.SessionId)}";
             
             if(!string.IsNullOrEmpty(request.Query))
             {
-                queryString += $"{queryString}&q={WebUtility.UrlEncode(request.Query)}";
+                queryString = $"{queryString}&q={WebUtility.UrlEncode(request.Query)}";
             }
 
             StringContent requestString = new StringContent("");
@@ -80,13 +80,13 @@ namespace Paynter.WitAi.Services
                 requestString = new StringContent(Serialise(request.Context), Encoding.UTF8, "application/json");
             }
 
-            var response = await HttpClient.PostAsync("converse?{queryString}", requestString);
+            var response = await HttpClient.PostAsync($"/converse?{queryString}", new StringContent(""));
             
             if(response.StatusCode != HttpStatusCode.OK)
             {
                 var contents = await response.Content.ReadAsStringAsync();
                 _logger.LogError("Error sending message to Wit.AI Converse API", contents, queryString, requestString);
-                throw new WitAiServiceException("Error sending message to Wit.AI Converse API", response);
+                throw new WitAiServiceException("Error sending message to Wit.AI Converse API", response, contents);
             }
 
             var content = await response.Content.ReadAsStringAsync();

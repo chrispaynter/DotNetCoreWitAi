@@ -12,6 +12,6 @@ namespace Paynter.WitAi.Models
         public string Action { get; set; }
         public JObject Entities { get; set; }
 
-        public int Confidence { get; set; }
+        public double Confidence { get; set; }
     }
 }
