@@ -1,15 +1,15 @@
 using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net;
-using Microsoft.Extensions.Options;
-using Paynter.WitAi.Configuration;
-using Paynter.WitAi.Models;
-using Microsoft.Extensions.Logging;
-using Paynter.WitAi.Exceptions;
-using Newtonsoft.Json.Serialization;
 using System.Text;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Paynter.WitAi.Models;
+using Paynter.WitAi.Configuration;
+using Paynter.WitAi.Exceptions;
 
 namespace Paynter.WitAi.Services
 {
