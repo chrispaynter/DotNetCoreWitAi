@@ -5,12 +5,13 @@ namespace Paynter.WitAi.Models
 {
     public class WitConverseResponse
     {
-        [JsonProperty("msg_id")]
-        public string MessageId { get; set; }
+        public WitConverseType Type { get; set; }
         
-        [JsonProperty("_text")]
-        public string Text { get; set; }
-
+        [JsonProperty("msg")]
+        public string Message { get; set; }
+        public string Action { get; set; }
         public JObject Entities { get; set; }
+
+        public int Confidence { get; set; }
     }
 }
