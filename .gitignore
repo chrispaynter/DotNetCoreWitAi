@@ -55,6 +55,7 @@ TestResults/
 # OS generated files #
 ######################
 .DS_Store?
+.DS_Store
 ehthumbs.db
 Icon?
 Thumbs.db
@@ -75,6 +76,4 @@ _[Ss]cripts
 *.dot[Cc]over
 
 log.txt
-.vscode
-.DS_Store
 project.lock.json
