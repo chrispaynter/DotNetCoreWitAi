@@ -35,7 +35,7 @@ namespace Paynter.WitAi.Services
                     _httpClient.BaseAddress = new Uri(_options.ApiUrl);
                     _httpClient.DefaultRequestHeaders.Accept.Clear();
                     _httpClient.DefaultRequestHeaders.Add("Accept", $"application/vnd.wit.{_options.ApiVersion}+json");
-                    _httpClient.DefaultRequestHeaders.Add("Authorization", $" Bearer {_options.ApiToken}");
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.ApiToken}");
                 }
 
                 return _httpClient;
