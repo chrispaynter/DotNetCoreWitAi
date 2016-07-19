@@ -6,13 +6,25 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Paynter.WitAi.Models;
 using Paynter.WitAi.Configuration;
 using Paynter.WitAi.Exceptions;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Paynter.WitAi.Services
 {
+    // T1 - The request to converse
+    // T2 - The response from converse (before the action was called)
+    public class WitActionDictionary : Dictionary<string, Func<WitConverseRequest, WitConverseResponse, Task<dynamic>>>
+    {
+        public Func<WitConverseRequest, WitConverseResponse, Task<dynamic>> GetAction(string action)
+        {
+            return this.FirstOrDefault(u => u.Key.Equals(action, StringComparison.OrdinalIgnoreCase)).Value;
+        }
+    }
+
     public class WitAiService
     {
         private WitAiOptions _options;
@@ -39,6 +51,68 @@ namespace Paynter.WitAi.Services
                 }
 
                 return _httpClient;
+            }
+        }
+
+        public async Task<dynamic> RunActions(WitConverseRequest request, WitActionDictionary actions)
+        {
+            var response = await Converse(request);
+            return await ContinueRunActions(request, response, actions);
+        }
+
+        public async Task<dynamic> ContinueRunActions(WitConverseRequest request, WitConverseResponse response, WitActionDictionary actions)
+        {
+            WitConverseRequest nextRequest;
+            WitConverseResponse nextResponse;
+            Func<WitConverseRequest, WitConverseResponse, Task<dynamic>> action;
+
+            if(response.Type == WitConverseType.Unknown)
+            {
+                _logger.LogError("Missing response type: {@response}", response);
+                throw new WitAiServiceException("Missing response type");
+            }
+
+            _logger.LogDebug("{@response}", response);
+
+            // Ommitting backwards compatibility for 'merge' in API version 20160516
+
+            switch(response.Type)
+            {
+                case WitConverseType.Error:
+                    _logger.LogError("Wit API Error: {@response}", response);
+                    throw new WitAiServiceException("WitAPI returned an error");
+
+                case WitConverseType.Stop:
+                    return request.Context;
+
+                case WitConverseType.Message:
+                    action = actions.GetAction("send");
+                    await action?.Invoke(request, response);
+
+                    nextRequest = new WitConverseRequest(request.SessionId, null, request.Context);
+                    nextResponse = await Converse(nextRequest);
+                    return await ContinueRunActions(nextRequest, nextResponse, actions);
+
+                case WitConverseType.Action:
+                    action = actions.GetAction(response.Action);
+
+                    if(action == null)
+                    {
+                        _logger.LogError("Missing Action for {actionName}", response.Action);
+                        throw new WitAiServiceException($"There is no action called {response.Action} in the passed in WitActionDictionary");
+                    }
+
+                    var newContext = await action?.Invoke(request, response);
+                    newContext =  newContext == null ? new {} : newContext;
+
+                    nextRequest = new WitConverseRequest(request.SessionId, null, newContext);
+                    nextResponse = await Converse(nextRequest);
+                    return await ContinueRunActions(nextRequest, nextResponse, actions);
+
+                default:
+                    // Unknown type
+                    _logger.LogError("Unknown response type: {@response}", response);
+                    throw new WitAiServiceException("Unknown response type");
             }
         }
 
@@ -80,7 +154,7 @@ namespace Paynter.WitAi.Services
                 requestString = new StringContent(Serialise(request.Context), Encoding.UTF8, "application/json");
             }
 
-            var response = await HttpClient.PostAsync($"/converse?{queryString}", new StringContent(""));
+            var response = await HttpClient.PostAsync($"/converse?{queryString}", requestString);
             
             if(response.StatusCode != HttpStatusCode.OK)
             {

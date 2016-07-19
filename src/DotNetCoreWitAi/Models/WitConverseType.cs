@@ -7,10 +7,12 @@ namespace Paynter.WitAi.Models
     [JsonConverter(typeof(StringEnumConverter))]
     public enum WitConverseType
     {
+        Unknown,
         Merge,
         [EnumMember(Value = "msg")]
         Message,
         Action,
-        Stop
+        Stop,
+        Error
     }
 }
