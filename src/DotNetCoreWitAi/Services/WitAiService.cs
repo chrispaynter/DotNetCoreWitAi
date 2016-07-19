@@ -9,22 +9,11 @@ using Newtonsoft.Json;
 using Paynter.WitAi.Models;
 using Paynter.WitAi.Configuration;
 using Paynter.WitAi.Exceptions;
-using System.Collections.Generic;
-using System.Linq;
+using Paynter.WitAi.Collections;
 using Newtonsoft.Json.Serialization;
 
 namespace Paynter.WitAi.Services
 {
-    // T1 - The request to converse
-    // T2 - The response from converse (before the action was called)
-    public class WitActionDictionary : Dictionary<string, Func<WitConverseRequest, WitConverseResponse, Task<dynamic>>>
-    {
-        public Func<WitConverseRequest, WitConverseResponse, Task<dynamic>> GetAction(string action)
-        {
-            return this.FirstOrDefault(u => u.Key.Equals(action, StringComparison.OrdinalIgnoreCase)).Value;
-        }
-    }
-
     public class WitAiService
     {
         private WitAiOptions _options;
