@@ -34,9 +34,14 @@ namespace Paynter.WitAi.Sessions
             return session;
         }
 
-        public void EndSession(WitSession session)
+        public void EndSession(string sessionId)
         {
-            _sessions.Remove(session);
+            var session = _sessions.FirstOrDefault(u => u.WitSessionId == sessionId);
+
+            if(session != null)
+            {
+                _sessions.Remove(session);;
+            }
         }
     }
 
