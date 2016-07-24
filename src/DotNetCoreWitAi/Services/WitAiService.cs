@@ -51,6 +51,8 @@ namespace Paynter.WitAi.Services
 
         public async Task<dynamic> ContinueRunActions(WitConverseRequest request, WitConverseResponse response, WitActionDictionary actions)
         {
+            _logger.LogDebug("Entering ContinueRunActions");
+            
             WitConverseRequest nextRequest;
             WitConverseResponse nextResponse;
             Func<WitConverseRequest, WitConverseResponse, Task<dynamic>> action;
@@ -61,20 +63,22 @@ namespace Paynter.WitAi.Services
                 throw new WitAiServiceException("Missing response type");
             }
 
-            _logger.LogDebug("{@response}", response);
 
             // Ommitting backwards compatibility for 'merge' in API version 20160516
 
             switch(response.Type)
             {
                 case WitConverseType.Error:
+                    _logger.LogDebug("Response Type - Error {response}", response);
                     _logger.LogError("Wit API Error: {@response}", response);
                     throw new WitAiServiceException("WitAPI returned an error");
 
                 case WitConverseType.Stop:
+                    _logger.LogDebug("Response Type - Stop");
                     return request.Context;
 
                 case WitConverseType.Message:
+                    _logger.LogDebug("Response Type - Message {message}", response.Message);
                     action = actions.GetAction("send");
                     await action?.Invoke(request, response);
 
@@ -83,6 +87,7 @@ namespace Paynter.WitAi.Services
                     return await ContinueRunActions(nextRequest, nextResponse, actions);
 
                 case WitConverseType.Action:
+                    _logger.LogDebug("Response Type - Action {action}", response.Action);
                     action = actions.GetAction(response.Action);
 
                     if(action == null)
@@ -123,6 +128,8 @@ namespace Paynter.WitAi.Services
 
         public async Task<WitConverseResponse> Converse(WitConverseRequest request)
         {
+            _logger.LogDebug("In Converse with {@request}", request);
+            
             if(string.IsNullOrEmpty(request.SessionId))
             {
                 _logger.LogError("Called Converse API without mandatory SessionId");
@@ -153,6 +160,7 @@ namespace Paynter.WitAi.Services
             }
 
             var content = await response.Content.ReadAsStringAsync();
+            _logger.LogDebug("Wit Converse Response: {@content}", content);
             return JsonConvert.DeserializeObject<WitConverseResponse>(content);
         }
 
